@@ -1,0 +1,38 @@
+name: Enterprise CI/CD Pipeline
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build-test:
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build Docker Image
+        run: docker build -t enterprise-app .
+
+      - name: Run Container Test
+        run: |
+          docker run -d -p 5000:5000 enterprise-app
+          sleep 5
+          curl http://localhost:5000
+
+  security-scan:
+    runs-on: self-hosted
+    needs: build-test
+
+    steps:
+      - name: Scan Docker Image
+        run: echo "Security scanning simulated"
+
+  deploy:
+    runs-on: self-hosted
+    needs: security-scan
+
+    steps:
+      - name: Deploy Application
+        run: echo "Deploying application to production"
